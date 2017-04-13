@@ -17,7 +17,12 @@ def get_markables_for_entity(markables,entity):
     :rtype: list
 
     """
-    raise NotImplementedError
+    l = []
+    for i in markables:
+        if i['entity'] == entity:
+            l.append(' '.join(i['string']))
+    return l
+    
     
     
 ## deliverable 1.2
@@ -32,8 +37,15 @@ def get_distances(markables, string):
     """
     ants = get_true_antecedents(markables) #hint
     ## hide
-    raise NotImplementedError
-    
+    res = []
+    for idx,markable in enumerate(markables):
+        string = string.lower()
+        anotherStr = ' '.join(markable['string']).lower()
+        if string == anotherStr:
+            dist = idx - ants[idx]
+            res.append(idx - ants[idx])
+    return res
+
 ## Deliverable 2.1
 def get_tp(pred_ant,markables):
     """Return a list of booleans, indicating whether an instance is a true positive or not
@@ -43,7 +55,22 @@ def get_tp(pred_ant,markables):
     :returns: list of booleans
 
     """
-    raise NotImplementedError
+    entities = get_entities(markables)
+    res = []
+
+    for idx, ci in enumerate(pred_ant):
+        tp = False
+        if (ci < idx):
+            for ent in entities:
+                if ((ci in ent) and (idx in ent)):
+                    tp = True
+                    break
+        res.append(tp)
+    return res
+
+
+    
+    
     
 ## Deliverable 2.1
 def get_fp(pred_ant,markables):
@@ -54,7 +81,20 @@ def get_fp(pred_ant,markables):
     :returns: list of booleans
 
     """
-    raise NotImplementedError
+    entities = get_entities(markables)
+    res = []
+
+    for idx, ci in enumerate(pred_ant):
+        fp = False
+        if (ci < idx):
+            for ent in entities:
+                ciin = (ci in ent) and (idx not in ent)
+                idxin = (idx in ent) and (ci not in ent)
+                if (ciin or idxin):
+                    fp = True
+                    break
+        res.append(fp)
+    return res
 
 ## Deliverable 2.1
 def get_fn(pred_ant,markables):
@@ -65,8 +105,27 @@ def get_fn(pred_ant,markables):
     :returns: list of booleans
 
     """
-    raise NotImplementedError
-    
+    entities = get_entities(markables)
+    res = []
+
+    for idx, ci in enumerate(pred_ant):
+        fn = False
+        tempuse = None
+        for en in entities:
+            if (idx in en):
+                tempuse = en
+                break
+
+        existci = (not idx == min(tempuse))
+        equal = (ci == idx)
+        notSameEntity = (ci not in tempuse)
+        if (existci and (equal or notSameEntity)):
+            fn = True
+
+        res.append(fn)
+    return res
+
+
 def recall(pred_ant,markables):
     """Compute the recall, tp/(tp+fn)
 
