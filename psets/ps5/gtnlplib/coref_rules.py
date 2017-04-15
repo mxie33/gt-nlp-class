@@ -48,7 +48,7 @@ def match_last_token(m_a,m_i):
     :rtype: boolean
 
     """
-    raise NotImplementedError
+    return downcase_list(m_a['string'])[-1]==downcase_list(m_i['string'])[-1]
 
 # deliverable 2.4
 def match_last_token_no_overlap(m_a,m_i):
@@ -60,8 +60,11 @@ def match_last_token_no_overlap(m_a,m_i):
     :rtype: boolean
 
     """
-    raise NotImplementedError
-    
+    mlt = match_last_token(m_a, m_i)
+    notoverlap1 = m_a['start_token'] > m_i['end_token']
+    notoverlap2 = m_i['start_token'] > m_a['end_token']
+    notoverlap = notoverlap1 or notoverlap2
+    return mlt and notoverlap
 # deliverable 2.5
 def match_on_content(m_a, m_i):
     """
@@ -72,11 +75,38 @@ def match_on_content(m_a, m_i):
     :rtype: boolean
 
     """
-    raise NotImplementedError
-    
+    notoverlap1 = m_a['start_token'] > m_i['end_token']
+    notoverlap2 = m_i['start_token'] > m_a['end_token']
+    notoverlap = notoverlap1 or notoverlap2
+    contentTags = ['CD', 'NN', 'NNS', 'NNP', 'NNPS', 'PRP', 'PRP$']
+    macontent = []
+    micontent = []
+
+    for mas, mastag in zip(m_a['string'], m_a['tags']):
+        if mastag in contentTags:
+            macontent.append(mas)
+    for mis, mistag in zip(m_i['string'], m_i['tags']):
+        if mistag in contentTags:
+            micontent.append(mis)
+    content_match = downcase_list(macontent)==downcase_list(micontent)
+    return content_match and notoverlap
+
 
 ########## helper code
+def match_no_overlap(m_a,m_i):
+    """
 
+    :param m_a: antecedent markable
+    :param m_i: referent markable
+    :returns: True if final tokens match and strings do not overlap
+    :rtype: boolean
+
+    """
+    mlt = match_last_token(m_a, m_i)
+    notoverlap1 = m_a['start_token'] > m_i['end_token']
+    notoverlap2 = m_i['start_token'] > m_a['end_token']
+    notoverlap = notoverlap1 or notoverlap2
+    return notoverlap
 def most_recent_match(markables,matcher):
     """given a list of markables and a pairwise matcher, return an antecedent list
     assumes markables are sorted

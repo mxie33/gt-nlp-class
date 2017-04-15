@@ -23,6 +23,20 @@ def minimal_features(markables,a,i):
     f = dict()
     ## your code here
     ## use functions from coref_rules
+    m_a = markables[a]
+    m_i = markables[i]
+    if (a == i):
+        f['new-entity'] = 1.0
+        return f
+    if (coref_rules.exact_match(m_a, m_i)):
+        f['exact-match'] = 1
+    if (coref_rules.match_last_token(m_a, m_i)):
+        f['last-token-match'] = 1
+    if (coref_rules.match_on_content(m_a, m_i)):
+        f['content-match'] = 1
+    if (not coref_rules.match_no_overlap(m_a, m_i)):
+        f['crossover'] = 1
+
     return f
 
 # deliverable 3.5
