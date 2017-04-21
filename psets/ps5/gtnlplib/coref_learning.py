@@ -15,7 +15,18 @@ def mention_rank(markables,i,feats,weights):
 
     """
     ## hide
-    raise NotImplementedError
+    best_score = 0
+    best_ant_idx = 0
+
+    for idx in range(i+1):
+        feat = feats(markables, i, idx)
+        temp_score = 0
+        for f,s in feat.items():
+            temp_score += weights[f]*s
+        if temp_score > best_score:
+            best_score = temp_score
+            best_ant_idx = idx
+    return best_ant_idx
     
 # deliverable 3.3
 def compute_instance_update(markables,i,true_antecedent,feats,weights):
@@ -40,13 +51,26 @@ def compute_instance_update(markables,i,true_antecedent,feats,weights):
 
     ## possibly useful
     #print i,true_antecedent,pred_antecedent
-    #print markables[i]#['string']
-    #print markables[true_antecedent], feats(markables,true_antecedent,i)
-    #print markables[pred_antecedent], feats(markables,pred_antecedent,i)
+    # print "i string: ", markables[i]
+    # print "true: ", markables[true_antecedent], feats(markables,true_antecedent,i)
+    # print "pred: ", markables[pred_antecedent], feats(markables,pred_antecedent,i)
     #print ""
+    entity_match = markables[pred_antecedent]['entity'] == markables[true_antecedent]['entity']
+    same_index = pred_antecedent == i and not true_antecedent == pred_antecedent
+    if (same_index or not entity_match):
 
-    raise NotImplementedError
-    
+        update = defaultdict(float)
+        truefeats = feats(markables,true_antecedent,i)
+        predfeats = feats(markables,pred_antecedent,i)
+        for f,s in truefeats.items():
+            update[f] += s
+        for f,s in predfeats.items():
+            update[f] -= s
+        return update
+    else:
+        return dict()
+
+
 # deliverable 3.4
 def train_avg_perceptron(markables,features,N_its=20):
     # the data and features are small enough that you can
@@ -56,12 +80,21 @@ def train_avg_perceptron(markables,features,N_its=20):
     tot_weights = defaultdict(float)
     weight_hist = []
     T = 0.
-    
+
     for it in xrange(N_its):
         num_wrong = 0 #helpful but not required to keep and print a running total of errors
         for document in markables:
-            # YOUR CODE HERE
-            pass
+            true_ants = coref.get_true_antecedents(document)
+            for i in range(len(document)):
+                updates = compute_instance_update(document, i,true_ants[i], features, weights)
+                if not len(updates) == 0:
+                    print "updates at: ", i
+                    print updates
+                    num_wrong += 1
+                for k,v in updates.items():
+                    weights[k] += v
+                    tot_weights[k] += T*v
+                T += 1.0
         print num_wrong,
 
         # update the weight history

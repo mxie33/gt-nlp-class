@@ -55,22 +55,16 @@ def get_tp(pred_ant,markables):
     :returns: list of booleans
 
     """
-    entities = get_entities(markables)
     res = []
 
     for idx, ci in enumerate(pred_ant):
         tp = False
-        if (ci < idx):
-            for ent in entities:
-                if ((ci in ent) and (idx in ent)):
-                    tp = True
-                    break
+        if (ci < idx and markables[idx]['entity'] == markables[ci]['entity']):
+            tp = True
         res.append(tp)
+
     return res
 
-
-    
-    
     
 ## Deliverable 2.1
 def get_fp(pred_ant,markables):
@@ -81,21 +75,15 @@ def get_fp(pred_ant,markables):
     :returns: list of booleans
 
     """
-    entities = get_entities(markables)
     res = []
 
     for idx, ci in enumerate(pred_ant):
         fp = False
-        if (ci < idx):
-            for ent in entities:
-                ciin = (ci in ent) and (idx not in ent)
-                idxin = (idx in ent) and (ci not in ent)
-                if (ciin or idxin):
-                    fp = True
-                    break
+        if (ci < idx and not markables[idx]['entity'] == markables[ci]['entity']):
+            fp = True
         res.append(fp)
-    return res
 
+    return res
 ## Deliverable 2.1
 def get_fn(pred_ant,markables):
     """Return a list of booleans, indicating whether an instance is a false negative or not
@@ -106,23 +94,15 @@ def get_fn(pred_ant,markables):
 
     """
     entities = get_entities(markables)
-    res = []
+    res = [False]*len(markables)
 
-    for idx, ci in enumerate(pred_ant):
-        fn = False
-        tempuse = None
-        for en in entities:
-            if (idx in en):
-                tempuse = en
-                break
-
-        existci = (not idx == min(tempuse))
-        equal = (ci == idx)
-        notSameEntity = (ci not in tempuse)
-        if (existci and (equal or notSameEntity)):
-            fn = True
-
-        res.append(fn)
+    for entity in entities:
+        for idx in range(len(entity)-1):
+            fn = False
+            sameindex = pred_ant[entity[idx+1]] == entity[idx+1]
+            notsameEnt = pred_ant[entity[idx+1]] not in entity[:idx+1]
+            if (sameindex or notsameEnt):
+                res[entity[idx+1]] = True
     return res
 
 
