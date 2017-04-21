@@ -27,7 +27,7 @@ def mention_rank(markables,i,feats,weights):
             best_score = temp_score
             best_ant_idx = idx
     return best_ant_idx
-    
+
 # deliverable 3.3
 def compute_instance_update(markables,i,true_antecedent,feats,weights):
     """Compute a perceptron update for markable i.
@@ -56,8 +56,9 @@ def compute_instance_update(markables,i,true_antecedent,feats,weights):
     # print "pred: ", markables[pred_antecedent], feats(markables,pred_antecedent,i)
     #print ""
     entity_match = markables[pred_antecedent]['entity'] == markables[true_antecedent]['entity']
-    same_index = pred_antecedent == i and not true_antecedent == pred_antecedent
-    if (same_index or not entity_match):
+    not_same_index = (not true_antecedent == pred_antecedent) and (true_antecedent == i or pred_antecedent == i)
+
+    if (not_same_index or not entity_match):
 
         update = defaultdict(float)
         truefeats = feats(markables,true_antecedent,i)
@@ -69,7 +70,6 @@ def compute_instance_update(markables,i,true_antecedent,feats,weights):
         return update
     else:
         return dict()
-
 
 # deliverable 3.4
 def train_avg_perceptron(markables,features,N_its=20):
@@ -88,13 +88,14 @@ def train_avg_perceptron(markables,features,N_its=20):
             for i in range(len(document)):
                 updates = compute_instance_update(document, i,true_ants[i], features, weights)
                 if not len(updates) == 0:
-                    print "updates at: ", i
-                    print updates
                     num_wrong += 1
                 for k,v in updates.items():
                     weights[k] += v
-                    tot_weights[k] += T*v
+                    #tot_weights[k] += T*v
                 T += 1.0
+                for k,v in weights.items():
+                    tot_weights[k] += v
+
         print num_wrong,
 
         # update the weight history

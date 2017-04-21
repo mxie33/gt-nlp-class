@@ -55,9 +55,21 @@ def distance_features(x,a,i,
 
     """
     f = dict()
-    ## your code here
+    if (a == i):
+        return f
+
+    token_dist = x[i]['start_token'] - x[a]['end_token']
+    if token_dist > max_token_distance:
+        token_dist = max_token_distance
+    t_feature = 'token-distance-' + (str)(token_dist)
+    f[t_feature] = 1
+    mention_dist = i-a
+    if mention_dist > max_mention_distance:
+        mention_dist = max_mention_distance
+    m_feature = 'mention-distance-' + (str)(mention_dist)
+    f[m_feature] = 1
     return f
-    
+
 ###### Feature combiners
 
 # deliverable 3.6
@@ -71,7 +83,10 @@ def make_feature_union(feat_func_list):
     """
     def f_out(x,a,i):
         # your code here
-        return None
+        out = dict()
+        for feat in feat_func_list:
+            out.update(feat(x,a,i))
+        return out
     return f_out
 
 # deliverable 3.7
